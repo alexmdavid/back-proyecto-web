@@ -88,8 +88,8 @@ def login_usuario():
                 cursor.execute("SELECT * FROM usuarios WHERE nombre = %s AND contrasena = %s", (username, hashed_password))
                 result = cursor.fetchone()
                 if result:
-                    flash("Login exitoso. ¡Bienvenido!")
-                    return redirect(url_for('index'))
+                    session['username'] = username  # Aquí guardamos el nombre de usuario en la sesión
+                    return redirect(url_for('perfil'))  # Redirigimos a la vista de perfil
                 else:
                     flash("Usuario o contraseña incorrectos.")
             except Error as e:
@@ -99,11 +99,59 @@ def login_usuario():
                 conexion.close()
     return render_template('login.html')
 
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     flash("Has cerrado sesión.")
     return redirect(url_for('login_usuario'))
+
+
+@app.route('/perfil')
+def perfil():
+    if 'username' not in session:
+        flash("Por favor, inicia sesión primero.")
+        return redirect(url_for('login_usuario'))
+
+    conexion = conectar_db()
+    if conexion:
+        cursor = conexion.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT nombre, apellido, correo FROM usuarios WHERE nombre = %s", (session['username'],))
+            usuario = cursor.fetchone()
+            if usuario:
+                return render_template('perfil.html', usuario=usuario)
+            else:
+                flash("Error al cargar el perfil.")
+                return redirect(url_for('index'))
+        except Error as e:
+            flash(f"Error al cargar el perfil: {e}")
+        finally:
+            cursor.close()
+            conexion.close()
+    return redirect(url_for('index'))
+
+#ruta para ver perfil
+@app.route('/ver perfil')
+def verPerfil():
+    conexion = conectar_db()
+    if conexion:
+        cursor = conexion.cursor(dictionary=True)
+        try:
+            cursor.execute("SELECT nombre, apellido, correo FROM usuarios WHERE nombre = %s", (session['username'],))
+            usuario = cursor.fetchone()
+            if usuario:
+                return render_template('verperfil.html', usuario=usuario)
+            else:
+                flash("Error al cargar el perfil.")
+                return redirect(url_for('index'))
+        except Error as e:
+            flash(f"Error al cargar el perfil: {e}")
+        finally:
+            cursor.close()
+            conexion.close()
+    return redirect(url_for('index'))
+    
 
 
 if __name__ == '__main__':
