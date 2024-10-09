@@ -15,8 +15,8 @@ def conectar_db():
         conexion = mysql.connector.connect(
             host='localhost',
             database='user_auth',
-            user='root',  # Cambiar si tienes un usuario diferente
-            password=''   # Agrega la contraseña de tu base de datos
+            user='root',  
+            password=''   
         )
         if conexion.is_connected():
             print("Conectado a MySQL")
@@ -34,7 +34,7 @@ def index():
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
-        # Lógica para manejar el registro
+        
         nombre = request.form['nombre']
         apellido = request.form['apellido']
         email = request.form['email']
@@ -42,7 +42,7 @@ def registro():
         # Hasheando la contraseña y guardando el usuario
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         
-        # Aquí puedes usar el modelo Usuario
+       
         usuario = Usuario.from_registro(nombre, apellido, email, hashed_password)
         
         conexion = conectar_db()
