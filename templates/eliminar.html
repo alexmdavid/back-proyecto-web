@@ -1,0 +1,28 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Inicio</title>
+    <link rel="stylesheet" href="/static/styles/style.css">
+</head>
+<table>
+    <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Correo</th>
+        <th>Acciones</th>
+    </tr>
+    {% for usuario in usuarios %}
+    <tr>
+        <td>{{ usuario[1] }}</td>  <!-- Nombre -->
+        <td>{{ usuario[2] }}</td>  <!-- Apellido -->
+        <td>{{ usuario[3] }}</td>  <!-- Correo -->
+        <td>
+            <!-- Formulario que envía directamente una solicitud POST -->
+            <form action="{{ url_for('eliminar_usuario', idusuario=usuario[0]) }}"onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                <button type="submit">Eliminar</button>
+            </form>
+            <a href="{{ url_for('editar_usuario', idusuario=usuario[0]) }}">Editar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

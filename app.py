@@ -151,7 +151,91 @@ def verPerfil():
             cursor.close()
             conexion.close()
     return redirect(url_for('index'))
-    
+
+@app.route('/usuarios')
+def mostrar_usuarios():
+    usuarios = []
+    conexion = conectar_db()
+    if conexion:
+        cursor = conexion.cursor()
+        cursor.execute("SELECT idusuario, nombre, apellido, correo FROM usuarios")
+        usuarios = cursor.fetchall()
+        print(usuarios) 
+    else:
+        flash(f'error')
+        
+    # Imprime los datos para verificar
+
+    return render_template('usuarios.html', usuarios=usuarios)
+
+# Ruta para eliminar un usuario
+@app.route('/eliminar_usuario/<int:idusuario>')
+def eliminar_usuario(idusuario):
+    conexion = conectar_db()
+    if conexion:
+        cursor = conexion.cursor()
+        try:
+            # Eliminar el usuario de la base de datos
+            cursor.execute("DELETE FROM usuarios WHERE idusuario = %s", (idusuario,))
+            conexion.commit()
+            flash("Usuario eliminado exitosamente.")
+        except Error as e:
+            flash(f"Error al eliminar usuario: {e}")
+        finally:
+            cursor.close()
+            conexion.close()
+    return redirect(url_for('mostrar_usuarios'))
+
+
+
+@app.route('/editar_usuario/<int:idusuario>', methods=['GET', 'POST'])
+def editar_usuario(idusuario):
+    conexion = conectar_db()
+    if request.method == 'POST':
+        # Recibir los nuevos datos desde el formulario
+        nombre = request.form['nombre']
+        apellido = request.form['apellido']
+        email = request.form['email']
+
+        if conexion:
+            cursor = conexion.cursor()
+            try:
+                # Actualizar los datos del usuario
+                cursor.execute("""
+                    UPDATE usuarios 
+                    SET nombre = %s, apellido = %s, correo = %s 
+                    WHERE idusuario = %s
+                """, (nombre, apellido, email, idusuario))
+                conexion.commit()
+                flash("Usuario actualizado exitosamente.")
+                return redirect(url_for('mostrar_usuarios'))
+            except Error as e:
+                flash(f"Error al actualizar usuario: {e}")
+            finally:
+                cursor.close()
+                conexion.close()
+
+    else:
+        if conexion:
+            cursor = conexion.cursor(dictionary=True)
+            try:
+                # Obtener los datos del usuario
+                cursor.execute("SELECT * FROM usuarios WHERE idusuario = %s", (idusuario,))
+                usuario = cursor.fetchone()
+                if usuario:
+                    return render_template('editar.html', usuario=usuario)
+                else:
+                    flash("Usuario no encontrado.")
+                    return redirect(url_for('mostrar_usuarios'))
+            except Error as e:
+                flash(f"Error al cargar datos del usuario: {e}")
+            finally:
+                cursor.close()
+                conexion.close()
+    return redirect(url_for('mostrar_usuarios'))
+
+
+
 
 
 if __name__ == '__main__':
